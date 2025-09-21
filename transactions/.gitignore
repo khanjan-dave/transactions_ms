@@ -14,7 +14,7 @@ build/
 
 # Environment and Sensitive Files
 # Excludes the Docker Compose file for local setup
-docker-compose.yml
+docker-compose.yaml
 
 # Excludes application-level properties that might contain secrets
 src/main/resources/application.properties
