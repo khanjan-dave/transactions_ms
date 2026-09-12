@@ -1,5 +1,54 @@
 version: '3.7'
 services:
+
+ # PostgreSQL Database
+  # postgres:
+  #   image: postgres:15
+  #   container_name: transaction-postgres
+  #   environment:
+  #     POSTGRES_DB: transaction_db
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: Khanjan123
+  #   ports:
+  #     - "5433:5432"
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # MongoDB
+  mongodb:
+    image: mongo:7.0
+    container_name: transaction-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: transaction-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Kafka and Zookeeper
   zookeeper:
     image: confluentinc/cp-zookeeper:7.5.0
     container_name: zookeeper
@@ -12,7 +61,7 @@ services:
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
-    container_name: kafka
+    container_name: kafkaa
     hostname: kafka
     ports:
       - "9092:9092"
@@ -29,3 +78,14 @@ services:
       - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1 
       - KAFKA_LOG_FLUSH_INTERVAL_MESSAGES=1
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+    
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+volumes:
+  postgres-data:
+  mongo-data:
+  redis-data:
